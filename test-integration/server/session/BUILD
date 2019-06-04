@@ -51,11 +51,47 @@ java_test(
     classpath_resources = ["//test-integration/resources:logback-test"]
 )
 
+
+java_test(
+    name = "transaction-it",
+    size = "medium",
+    srcs = ["TransactionIT.java"],
+    classpath_resources = ["//test-integration/resources:logback-test"],
+    test_class = "grakn.core.server.session.TransactionIT",
+    deps = [
+        "//common",
+        "//concept",
+        "//dependencies/maven/artifacts/org/apache/tinkerpop:gremlin-core",
+        "//dependencies/maven/artifacts/org/hamcrest:hamcrest-library",
+        "//server",
+        "//test-integration/rule:grakn-test-server",
+        "//test-integration/util:graql-test-util",
+        "@graknlabs_graql//java:graql",
+    ],
+)
+
+java_test(
+    name = "concurrent-transactions-it",
+    size = "medium",
+    srcs = ["ConcurrentTransactionsIT.java"],
+    classpath_resources = ["//test-integration/resources:logback-test"],
+    test_class = "grakn.core.server.session.ConcurrentTransactionsIT",
+    deps = [
+        "//common",
+        "//concept",
+        "//dependencies/maven/artifacts/org/hamcrest:hamcrest-library",
+        "//server",
+        "//test-integration/rule:grakn-test-server",
+        "@graknlabs_graql//java:graql",
+    ],
+)
+
 checkstyle_test(
     name = "checkstyle",
     targets = [
         ":session-it",
         ":keyspace-cache-it",
-        ":transaction-cache-it"
+        ":transaction-cache-it",
+        ":transaction-it"
     ],
 )

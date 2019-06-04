@@ -160,7 +160,7 @@ public class KeyspaceStatisticsIT {
     }
 
     @Test
-    public void keyspaceStatisticsNotUpdatedIfNotcommitted() {
+    public void keyspaceStatisticsNotUpdatedIfNotCommitted() {
         TransactionOLTP tx = localSession.transaction().write();
         AttributeType ageType = tx.putAttributeType("age", AttributeType.DataType.LONG);
         Role friend = tx.putRole("friend");

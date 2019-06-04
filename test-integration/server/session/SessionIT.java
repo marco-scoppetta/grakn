@@ -76,11 +76,19 @@ public class SessionIT {
      * It is not possible to have multiple transactions per thread.
      */
     @Test
-    public void tryingToOpenTwoTransactionsInSameThread_throwsException() {
+    public void tryingToOpenTwoWriteTransactionsInSameThread_throwsException() {
         TransactionOLTP tx1 = session.transaction().write();
         expectedException.expect(TransactionException.class);
         expectedException.expectMessage("A transaction is already open on this thread for graph [" + session.keyspace() + "]. Close the current transaction before opening a new one in the same thread.");
         TransactionOLTP tx2 = session.transaction().write();
+    }
+
+    @Test
+    public void tryingToOpenTwoReadTransactionsInSameThread_throwsException() {
+        TransactionOLTP tx1 = session.transaction().read();
+        expectedException.expect(TransactionException.class);
+        expectedException.expectMessage("A transaction is already open on this thread for graph [" + session.keyspace() + "]. Close the current transaction before opening a new one in the same thread.");
+        TransactionOLTP tx2 = session.transaction().read();
     }
 
 
@@ -186,30 +194,5 @@ public class SessionIT {
 
         SchemaConcept concept = tx1.getSchemaConcept(Label.of("thing"));
         assertEquals("thing", concept.label().toString());
-    }
-
-    @Test
-    public void whenTransactionIsClosed_notUsable(){
-        TransactionOLTP tx1 = session.transaction().write();
-        tx1.close();
-        expectedException.expect(TransactionException.class);
-        expectedException.expectMessage("The transaction for keyspace [" + session.keyspace() + "] is closed.");
-        SchemaConcept concept = tx1.getSchemaConcept(Label.of("thing"));
-        assertEquals("thing", concept.label().toString());
-    }
-
-    @Test
-    public void transactionRead_checkMutationsAllowedThrows(){
-        TransactionOLTP tx1 = session.transaction().read();
-        expectedException.expect(TransactionException.class);
-        tx1.checkMutationAllowed();
-        tx1.close();
-        TransactionOLTP tx2 = session.transaction().write();
-        tx2.checkMutationAllowed();
-        tx2.close();
-        TransactionOLTP tx3 = session.transaction().read();
-        expectedException.expect(TransactionException.class);
-        tx3.checkMutationAllowed();
-        tx3.close();
     }
 }

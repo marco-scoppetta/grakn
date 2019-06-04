@@ -664,7 +664,7 @@ public class TransactionOLTP implements Transaction {
             return transactionCache.getCachedConcept(id);
         }
 
-        // If edgeId, we are trying to fetch either:
+        // If edgeId we are trying to fetch either:
         // - a concept edge
         // - a reified relation
         if (Schema.isEdgeId(id)) {

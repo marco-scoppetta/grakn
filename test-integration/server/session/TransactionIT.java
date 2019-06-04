@@ -16,9 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package grakn.core.server.kb;
+package grakn.core.server.session;
 
 import grakn.core.common.exception.ErrorMessage;
+import grakn.core.concept.Label;
 import grakn.core.concept.answer.ConceptMap;
 import grakn.core.concept.thing.Attribute;
 import grakn.core.concept.thing.Entity;
@@ -29,24 +30,14 @@ import grakn.core.concept.type.Role;
 import grakn.core.concept.type.SchemaConcept;
 import grakn.core.concept.type.Type;
 import grakn.core.rule.GraknTestServer;
-import grakn.core.server.exception.InvalidKBException;
 import grakn.core.server.exception.TransactionException;
 import grakn.core.server.kb.concept.EntityTypeImpl;
 import grakn.core.server.kb.structure.Shard;
-import grakn.core.server.session.SessionImpl;
-import grakn.core.server.session.TransactionOLTP;
 import graql.lang.Graql;
 import graql.lang.query.GraqlDefine;
 import graql.lang.query.GraqlGet;
 import graql.lang.query.GraqlInsert;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -54,12 +45,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static grakn.core.util.GraqlTestUtil.assertCollectionsNonTriviallyEqual;
 import static java.util.stream.Collectors.toSet;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -161,8 +156,6 @@ public class TransactionIT {
         assertEquals(10000L, tx.shardingThreshold());
     }
 
-
-
     @Test
     public void whenBuildingAConceptFromAVertex_ReturnConcept() {
         EntityTypeImpl et = (EntityTypeImpl) tx.putEntityType("Sample Entity Type");
@@ -170,51 +163,44 @@ public class TransactionIT {
     }
 
     @Test
-    public void whenPassingTxToAnotherThreadWithoutOpening_Throw() throws ExecutionException, InterruptedException {
-        ExecutorService pool = Executors.newSingleThreadExecutor();
-
-        expectedException.expectCause(IsInstanceOf.instanceOf(TransactionException.class));
-        expectedException.expectMessage(TransactionException.transactionClosed(tx, null).getMessage());
-
-        Future future = pool.submit(() -> {
-            tx.putEntityType("A Thing");
-        });
-        future.get();
+    public void whenTransactionIsClosed_notUsable(){
+        TransactionOLTP tx1 = session.transaction().write();
+        tx1.close();
+        expectedException.expect(TransactionException.class);
+        expectedException.expectMessage("The transaction for keyspace [" + session.keyspace() + "] is closed.");
+        SchemaConcept concept = tx1.getSchemaConcept(Label.of("thing"));
+        assertEquals("thing", concept.label().toString());
     }
 
     @Test
-    public void attemptingToUseClosedTxFailsThenOpeningNewTx_EnsureTxIsUsable() throws InvalidKBException {
-        tx.close();
-
-        boolean errorThrown = false;
-        try {
-            tx.putEntityType("A Thing");
-        } catch (TransactionException e) {
-            if (e.getMessage().equals("The transaction for keyspace [" + tx.keyspace() + "] is closed. Use the session to get a new transaction for the graph.")) {
-                errorThrown = true;
-            }
-        }
-        assertTrue("Graph not correctly closed", errorThrown);
-
-        tx = session.transaction().write();
-        tx.putEntityType("A Thing");
+    public void transactionRead_checkMutationsAllowedThrows(){
+        TransactionOLTP tx1 = session.transaction().read();
+        expectedException.expect(TransactionException.class);
+        tx1.checkMutationAllowed();
+        tx1.close();
+        TransactionOLTP tx2 = session.transaction().write();
+        tx2.checkMutationAllowed();
+        tx2.close();
+        TransactionOLTP tx3 = session.transaction().read();
+        expectedException.expect(TransactionException.class);
+        tx3.checkMutationAllowed();
+        tx3.close();
     }
-
 
     @Test
     public void whenClosingATxWhichWasJustCommitted_DoNothing() {
         tx.commit();
-        assertTrue("Graph is still open after commit", tx.isClosed());
+        assertTrue("Transaction is still open after commit", tx.isClosed());
         tx.close();
-        assertTrue("Graph is somehow open after close", tx.isClosed());
+        assertTrue("Transaction is somehow open after close", tx.isClosed());
     }
 
     @Test
     public void whenCommittingATxWhichWasJustCommitted_DoNothing() {
         tx.commit();
-        assertTrue("Graph is still open after commit", tx.isClosed());
+        assertTrue("Transaction is still open after commit", tx.isClosed());
         tx.commit();
-        assertTrue("Graph is somehow open after 2nd commit", tx.isClosed());
+        assertTrue("Transaction is somehow open after 2nd commit", tx.isClosed());
     }
 
     @Test
@@ -256,33 +242,6 @@ public class TransactionIT {
         Entity human = person.create();
         expectedException.expectMessage(ErrorMessage.TRANSACTION_READ_ONLY.getMessage(tx.keyspace()));
         tx.commit();
-    }
-
-    @Test
-    public void whenOpeningDifferentTypesOfTransactionsOnTheSameThread_Throw() {
-        String keyspace = tx.keyspace().name();
-        failAtOpeningTx(session, true, keyspace);
-        tx.close();
-
-        session.transaction().write();
-        failAtOpeningTx(session, false, keyspace);
-    }
-
-    private void failAtOpeningTx(SessionImpl session, boolean write, String keyspace) {
-        Exception exception = null;
-        try {
-            //noinspection ResultOfMethodCallIgnored
-            if (write) {
-                session.transaction().write();
-            } else {
-                session.transaction().read();
-            }
-        } catch (TransactionException e) {
-            exception = e;
-        }
-        assertNotNull(exception);
-        assertThat(exception, instanceOf(TransactionException.class));
-        assertEquals(exception.getMessage(), ErrorMessage.TRANSACTION_ALREADY_OPEN.getMessage(keyspace));
     }
 
     @Test
@@ -404,7 +363,7 @@ public class TransactionIT {
     }
 
     @Test
-    public void whenCommitingInferredConcepts_InferredConceptsAreNotPersisted(){
+    public void whenCommittingInferredConcepts_InferredConceptsAreNotPersisted(){
         tx.execute(Graql.<GraqlDefine>parse(
                     "define " +
                             "name sub attribute, datatype string;" +
@@ -434,7 +393,7 @@ public class TransactionIT {
     }
 
     @Test
-    public void whenCommitingInferredAttributeEdge_EdgeIsNotPersisted(){
+    public void whenCommittingInferredAttributeEdge_EdgeIsNotPersisted(){
         tx.execute(Graql.<GraqlDefine>parse(
                 "define " +
                         "score sub attribute, datatype double;" +
@@ -465,7 +424,7 @@ public class TransactionIT {
     }
 
     @Test
-    public void whenCommitingConceptsDependentOnInferredConcepts_conceptsAndDependantsArePersisted(){
+    public void whenCommittingConceptsDependentOnInferredConcepts_conceptsAndDependantsArePersisted(){
         String inferrableSchema = "define " +
                 "baseEntity sub entity, has inferrableAttribute, has nonInferrableAttribute, plays someRole, plays anotherRole;" +
                 "someEntity sub baseEntity;" +
