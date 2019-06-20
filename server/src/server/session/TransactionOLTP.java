@@ -228,15 +228,22 @@ public class TransactionOLTP implements Transaction {
                 // NOTE: we still need to rely on attributesMap instead of checking in the graph
                 // if the index exists, because apparently JanusGraph does not make indexes available
                 // in a Read Committed fashion
-                if (session.attributesMap().containsKey(labelIndexPair.getValue())) {
+                GraphTraversal<Vertex, Vertex> traversal = getTinkerTraversal().V().has(Schema.VertexProperty.INDEX.name(), labelIndexPair.getValue());
+                if (session.attributesMap().containsKey(labelIndexPair.getValue())) { // if someone created vertex concurrently
                     ConceptId targetId = session.attributesMap().get(labelIndexPair.getValue());
                     merge(getTinkerTraversal(), conceptId, targetId);
                     statisticsDelta().decrement(labelIndexPair.getKey());
+                } else if (traversal.hasNext()){ // if it's already in the graph
+                    ConceptId targetId = Schema.conceptIdFromVertexId(traversal.next().id());
+                    merge(getTinkerTraversal(), conceptId, targetId);
+                    statisticsDelta().decrement(labelIndexPair.getKey());
+                } else {
+                    session.attributesMap().putIfAbsent(labelIndexPair.getValue(), conceptId);
                 }
             }));
             session.keyspaceStatistics().commit(this, uncomittedStatisticsDelta);
             janusTransaction.commit();
-            updateAttributesMapInSession();
+//            updateAttributesMapInSession();
         } finally {
             session.graphLock().writeLock().unlock();
         }

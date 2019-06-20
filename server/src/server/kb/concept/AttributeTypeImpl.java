@@ -138,14 +138,7 @@ public class AttributeTypeImpl<D> extends TypeImpl<AttributeType<D>, Attribute<D
      * @return A new or already existing instance
      */
     private Attribute<D> putInstance(Schema.BaseType instanceBaseType, Supplier<Attribute<D>> finder, BiFunction<VertexElement, AttributeType<D>, Attribute<D>> producer, boolean isInferred) {
-        Attribute<D> instance = finder.get();
-        if (instance == null) {
-            instance = addInstance(instanceBaseType, producer, isInferred);
-        } else {
-            if (isInferred && !instance.isInferred()) {
-                throw TransactionException.nonInferredThingExists(instance);
-            }
-        }
+        Attribute<D> instance = addInstance(instanceBaseType, producer, isInferred);
         return instance;
     }
 
