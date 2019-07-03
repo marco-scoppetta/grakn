@@ -42,6 +42,17 @@ public class ConcurrentTransactionsIT {
         session.close();
     }
 
+
+    /**
+     *
+     *              WARNING:::::::!!!!!!!
+     *
+     *              PROBABLY THE READ COMMITTED ISOLATION IS COMPROSIMED BY INDEX CACHE WHICH CACHES ALL THE VERTICES FETCHED USING ANY INDEXED PROPERTY
+     *              FOR EXAMPLE ATTRIBUTES OR ALMOST ANYTHING ELSE (THIS IS THE REASON WHY WE NEED ATTRIBUTE CACHE!!!!)
+     *
+     *
+     */
+
     /**
      * Read Uncommitted – Read Uncommitted is the lowest isolation level.
      * In this level, one transaction may read not yet committed changes made by other transaction, thereby allowing dirty reads.
