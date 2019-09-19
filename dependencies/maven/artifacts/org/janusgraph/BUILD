@@ -38,7 +38,8 @@ java_library(
         "//external:jar/org/janusgraph/janusgraph-cql"
     ],
     runtime_deps = [
-        "//dependencies/maven/artifacts/com/datastax/cassandra:cassandra-driver-core",
+        "//dependencies/maven/artifacts/com/datastax/oss:java-driver-core",
+        "//dependencies/maven/artifacts/com/datastax/oss:java-driver-query-builder",
         "//dependencies/maven/artifacts/com/google/guava:guava",
         "//dependencies/maven/artifacts/io/netty:netty-handler",
         "//dependencies/maven/artifacts/io/vavr:vavr",
@@ -60,10 +61,13 @@ java_library(
         "//dependencies/maven/artifacts/ch/qos/logback:logback-classic",
         "//dependencies/maven/artifacts/com/datastax/cassandra:cassandra-driver-core",
         "//dependencies/maven/artifacts/com/fasterxml/jackson/module:jackson-module-scala-2-11",
+        "//dependencies/maven/artifacts/org/apache/cassandra:cassandra-all",
+        "//dependencies/maven/artifacts/org/apache/hadoop:hadoop-client",
         "//dependencies/maven/artifacts/org/apache/tinkerpop:hadoop-gremlin",
         "//dependencies/maven/artifacts/org/apache/tinkerpop:spark-gremlin",
         "//dependencies/maven/artifacts/org/apache/tinkerpop:tinkergraph-gremlin",
-        ":janusgraph-core"
+        ":janusgraph-core",
+        ":janusgraph-cql"
     ],
     visibility = [
         "//visibility:public"
