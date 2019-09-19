@@ -42,7 +42,6 @@ java_library(
         "//dependencies/maven/artifacts/com/datastax/oss:java-driver-query-builder",
         "//dependencies/maven/artifacts/com/google/guava:guava",
         "//dependencies/maven/artifacts/io/netty:netty-handler",
-        "//dependencies/maven/artifacts/io/vavr:vavr",
         ":janusgraph-core"
     ],
     visibility = [
