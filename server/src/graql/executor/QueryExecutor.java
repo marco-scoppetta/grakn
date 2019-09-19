@@ -18,6 +18,8 @@
 
 package grakn.core.graql.executor;
 
+import io.vavr.API;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import grakn.benchmark.lib.instrumentation.ServerTracing;
@@ -107,10 +109,18 @@ public class QueryExecutor {
             validateClause(matchClause);
 
             if (!infer) {
-                answerStream = matchClause.getPatterns().getDisjunctiveNormalForm().getPatterns().stream()
+
+                // TODO: this is automatically fixed in Java 10 or OpenJDK 8u222, remove workaround if these conditions met
+                // workaround to deal with non-lazy Java 8 flatMap() functions
+                io.vavr.collection.Stream<Conjunction<Statement>> conjunctions =
+                        io.vavr.collection.Stream.ofAll(matchClause.getPatterns().getDisjunctiveNormalForm().getPatterns().stream());
+
+                io.vavr.collection.Stream<ConceptMap> conceptMaps = conjunctions
                         .map(p -> ReasonerQueries.create(p, transaction))
                         .map(ReasonerQueryImpl::getPattern)
-                        .flatMap(p -> traversal(p, TraversalPlanner.createTraversal(p, transaction)));
+                        .flatMap(p -> io.vavr.collection.Stream.ofAll(traverse(p)));
+
+                answerStream = conceptMaps.toJavaStream();
 
             } else {
                 answerStream = new DisjunctionIterator(matchClause, transaction).hasStream();
@@ -187,10 +197,14 @@ public class QueryExecutor {
         }
     }
 
+    public Stream<ConceptMap> traverse(Conjunction<Pattern> pattern) {
+        return traverse(pattern, TraversalPlanner.createTraversal(pattern, transaction));
+    }
+
     /**
      * @return resulting answer stream
      */
-    public Stream<ConceptMap> traversal(Conjunction<Pattern> pattern, GraqlTraversal graqlTraversal) {
+    public Stream<ConceptMap> traverse(Conjunction<Pattern> pattern, GraqlTraversal graqlTraversal) {
         Set<Variable> vars = Sets.filter(pattern.variables(), Variable::isReturned);
         GraphTraversal<Vertex, Map<String, Element>> traversal = graqlTraversal.getGraphTraversal(transaction, vars);
 

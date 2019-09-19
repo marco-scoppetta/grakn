@@ -80,7 +80,8 @@ java_library(
         "//dependencies/maven/artifacts/org/janusgraph:janusgraph-core",
         "//dependencies/maven/artifacts/org/janusgraph:janusgraph-hadoop",
         "//dependencies/maven/artifacts/org/scala-lang:scala-library", # PREVIOUSLY UNDECLARED
-        "//dependencies/maven/artifacts/org/slf4j:slf4j-api"
+        "//dependencies/maven/artifacts/org/slf4j:slf4j-api",
+        "//dependencies/maven/artifacts/io/vavr:vavr",
     ],
     runtime_deps = [
         "//dependencies/maven/artifacts/ch/qos/logback:logback-classic",
@@ -123,7 +124,7 @@ java_deps(
 assemble_targz(
     name = "assemble-linux-targz",
     output_filename = "grakn-core-server-linux",
-    targets = [":server-deps", "//bin:assemble-bash-targz"],
+    targets = [":server-deps", "@graknlabs_common//bin:assemble-bash-targz"],
     additional_files = {
         "//server:conf/logback.xml": "server/conf/logback.xml",
         "//server:conf/grakn.properties": "server/conf/grakn.properties",
@@ -146,7 +147,7 @@ assemble_targz(
 assemble_zip(
     name = "assemble-mac-zip",
     output_filename = "grakn-core-server-mac",
-    targets = [":server-deps", "//bin:assemble-bash-targz"],
+    targets = [":server-deps", "@graknlabs_common//bin:assemble-bash-targz"],
     additional_files = {
         "//server:conf/logback.xml": "server/conf/logback.xml",
         "//server:conf/grakn.properties": "server/conf/grakn.properties",
@@ -169,7 +170,7 @@ assemble_zip(
 assemble_zip(
     name = "assemble-windows-zip",
     output_filename = "grakn-core-server-windows",
-    targets = [":server-deps", "//bin:assemble-bat-targz"],
+    targets = [":server-deps", "@graknlabs_common//bin:assemble-bat-targz"],
     additional_files = {
         "//server:conf/logback.xml": "server/conf/logback.xml",
         "//server:conf/grakn.properties": "server/conf/grakn.properties",
@@ -211,8 +212,9 @@ assemble_apt(
     version_file = "//:VERSION",
     depends = [
       "openjdk-8-jre",
-      "grakn-core-bin (={version})"
+      "grakn-bin (>=%{@graknlabs_common})"
     ],
+    workspace_refs = "@graknlabs_grakn_core_workspace_refs//:refs.json",
     archives = [":server-deps"],
     installation_dir = "/opt/grakn/core/",
     files = {
@@ -248,6 +250,7 @@ assemble_rpm(
     installation_dir = "/opt/grakn/core/",
     version_file = "//:VERSION",
     spec_file = "//config/rpm:grakn-core-server.spec",
+    workspace_refs = "@graknlabs_grakn_core_workspace_refs//:refs.json",
     archives = [":server-deps"],
     empty_dirs = [
         "opt/grakn/core/server/services/lib/",
