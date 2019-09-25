@@ -22,28 +22,28 @@ def graknlabs_build_tools():
     git_repository(
         name = "graknlabs_build_tools",
         remote = "https://github.com/graknlabs/build-tools",
-        commit = "d909d8401650c404d6a56081297235e47783005e", # sync-marker: do not remove this comment, this is used for sync-dependencies by @graknlabs_build_tools
+        commit = "04c69fbe5277bf2ed9e2baf5e9a53ac3c9ebee80", # sync-marker: do not remove this comment, this is used for sync-dependencies by @graknlabs_build_tools
     )
 
 def graknlabs_common():
     git_repository(
         name = "graknlabs_common",
         remote = "https://github.com/graknlabs/common",
-        commit = "da94c26e683776a07fe5b46eced9cb85064a9740", # sync-marker: do not remove this comment, this is used for sync-dependencies by @graknlabs_common
+        tag = "0.2.0", # sync-marker: do not remove this comment, this is used for sync-dependencies by @graknlabs_common
     )
 
 def graknlabs_graql():
      git_repository(
          name = "graknlabs_graql",
          remote = "https://github.com/graknlabs/graql",
-         commit = "5fc0b92f1f779878bc3977f34b0149cbe769ffe8", # sync-marker: do not remove this comment, this is used for sync-dependencies by @graknlabs_graql
+         tag = "1.0.3", # sync-marker: do not remove this comment, this is used for sync-dependencies by @graknlabs_graql
      )
 
 def graknlabs_protocol():
     git_repository(
         name = "graknlabs_protocol",
         remote = "https://github.com/graknlabs/protocol",
-        commit = "e83603accc8c26eb08f2db39a3d244c00eadab10", # sync-marker: do not remove this comment, this is used for sync-dependencies by @graknlabs_protocol
+        tag = "1.0.2", # sync-marker: do not remove this comment, this is used for sync-dependencies by @graknlabs_protocol
     )
 
 def graknlabs_client_java():
@@ -57,7 +57,7 @@ def graknlabs_console():
     git_repository(
         name = "graknlabs_console",
         remote = "https://github.com/graknlabs/console",
-        commit = "88fa50935ad2e3a06e73a0bef172fb1e9f69e6d4"
+        commit = "0a91ec1abf91462a737ccd44c483817ff1aad0d6"
     )
 
 def graknlabs_benchmark():
