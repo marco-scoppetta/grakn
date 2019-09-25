@@ -264,7 +264,7 @@ dependencies:
 
   org.janusgraph:
     janusgraph-cql:
-      version: "0.0.2-grakn-janus"
+      version: "0.0.3-grakn-janus"
       lang: java
       exclude:
       - "ch.qos.logback:logback-classic"
@@ -280,7 +280,7 @@ dependencies:
       - "com.codahale.metrics:metrics-graphite" # CONFLICTING WITH DROPWIZARD METRICS
       - "io.vavr:vavr"
     janusgraph-core:
-      version: "0.0.2-grakn-janus"
+      version: "0.0.3-grakn-janus"
       lang: java
       exclude:
       - "ch.qos.logback:logback-classic"
@@ -296,7 +296,7 @@ dependencies:
       - "org.slf4j:slf4j-log4j12"
       - "io.vavr:vavr"
     janusgraph-hadoop:
-      version: "0.0.2-grakn-janus"
+      version: "0.0.3-grakn-janus"
       lang: java
       exclude:
       - "com.codahale.metrics:metrics-core"
