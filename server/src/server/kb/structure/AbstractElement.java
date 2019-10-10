@@ -112,6 +112,10 @@ public abstract class AbstractElement<E extends Element, P extends Enum> {
         return null;
     }
 
+    public void removeProperty(P key){
+        element().property(key.name()).remove();
+    }
+
     public Boolean propertyBoolean(P key) {
         Boolean value = property(key);
         if (value == null) return false;

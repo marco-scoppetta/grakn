@@ -140,7 +140,7 @@ public class Session implements AutoCloseable {
         ConceptObserver conceptObserver = new ConceptObserver(cacheProvider, statisticsDelta);
 
         // janus elements
-        JanusGraphTransaction janusGraphTransaction = graph.buildTransaction().threadBound().consistencyChecks(false).start();
+        JanusGraphTransaction janusGraphTransaction = graph.newThreadBoundTransaction();
         ElementFactory elementFactory = new ElementFactory(janusGraphTransaction);
 
         // Grakn elements

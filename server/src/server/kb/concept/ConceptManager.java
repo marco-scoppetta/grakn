@@ -217,6 +217,7 @@ public class ConceptManager {
             currentValue = Schema.MetaSchema.values().length + 1;
         } else {
             currentValue = currentValue + 1;
+            metaConcept.vertex().removeProperty(Schema.VertexProperty.CURRENT_LABEL_ID);
         }
         //Vertex is used directly here to bypass meta type mutation check
         metaConcept.property(Schema.VertexProperty.CURRENT_LABEL_ID, currentValue);
