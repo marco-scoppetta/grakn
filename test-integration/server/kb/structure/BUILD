@@ -22,9 +22,13 @@ java_test(
   deps = [
       "//concept:concept",
       "//server:server",
+      "//common",
       "//test-integration/rule:grakn-test-server",
 
+      "//dependencies/maven/artifacts/com/google/guava:guava",
       "//dependencies/maven/artifacts/org/apache/tinkerpop:gremlin-core",
+      "//dependencies/maven/artifacts/org/janusgraph:janusgraph-core",
+      "//dependencies/maven/artifacts/org/mockito:mockito-core"
   ],
   size = "medium",
   classpath_resources = ["//test-integration/resources:logback-test"]

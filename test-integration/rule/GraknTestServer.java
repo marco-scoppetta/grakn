@@ -24,7 +24,7 @@ import grakn.core.common.config.ConfigKey;
 import grakn.core.server.GraknStorage;
 import grakn.core.server.Server;
 import grakn.core.server.ServerFactory;
-import grakn.core.server.keyspace.KeyspaceImpl;
+import grakn.core.server.keyspace.Keyspace;
 import grakn.core.server.keyspace.KeyspaceManager;
 import grakn.core.server.rpc.KeyspaceRequestsHandler;
 import grakn.core.server.rpc.KeyspaceService;
@@ -35,7 +35,7 @@ import grakn.core.server.rpc.SessionService;
 import grakn.core.server.session.HadoopGraphFactory;
 import grakn.core.server.session.JanusGraphFactory;
 import grakn.core.server.session.SessionFactory;
-import grakn.core.server.session.SessionImpl;
+import grakn.core.server.session.Session;
 import grakn.core.server.util.LockManager;
 import io.grpc.ServerBuilder;
 import org.apache.commons.io.FileUtils;
@@ -71,6 +71,7 @@ public class GraknTestServer extends ExternalResource {
     protected KeyspaceManager keyspaceManager;
     protected SessionFactory sessionFactory;
     protected Path dataDirTmp;
+    protected JanusGraphFactory janusGraphFactory;
 
     // Cassandra
     protected final Path originalCassandraConfigPath;
@@ -133,21 +134,25 @@ public class GraknTestServer extends ExternalResource {
         return serverConfig.getProperty(ConfigKey.SERVER_HOST_NAME) + ":" + serverConfig.getProperty(ConfigKey.GRPC_PORT);
     }
 
-    public SessionImpl sessionWithNewKeyspace() {
-        KeyspaceImpl randomKeyspace = randomKeyspaceName();
+    public Session sessionWithNewKeyspace() {
+        Keyspace randomKeyspace = randomKeyspaceName();
         return session(randomKeyspace);
     }
 
-    public KeyspaceImpl randomKeyspaceName() {
-        return KeyspaceImpl.of("a" + UUID.randomUUID().toString().replaceAll("-", ""));
+    public Keyspace randomKeyspaceName() {
+        return Keyspace.of("a" + UUID.randomUUID().toString().replaceAll("-", ""));
     }
 
-    public SessionImpl session(KeyspaceImpl keyspace) {
+    public Session session(Keyspace keyspace) {
         return sessionFactory.session(keyspace);
     }
 
     public SessionFactory sessionFactory() {
         return sessionFactory;
+    }
+
+    public JanusGraphFactory janusGraphFactory() {
+        return janusGraphFactory;
     }
 
     public Config serverConfig() {
@@ -207,7 +212,7 @@ public class GraknTestServer extends ExternalResource {
     private Server createServer() {
         // distributed locks
         LockManager lockManager = new LockManager();
-        JanusGraphFactory janusGraphFactory = new JanusGraphFactory(serverConfig);
+        janusGraphFactory = new JanusGraphFactory(serverConfig);
         HadoopGraphFactory hadoopGraphFactory = new HadoopGraphFactory(serverConfig);
         Cluster cluster = Cluster.builder()
                 .addContactPoint(serverConfig.getProperty(ConfigKey.STORAGE_HOSTNAME))
@@ -228,4 +233,5 @@ public class GraknTestServer extends ExternalResource {
 
         return ServerFactory.createServer(serverRPC);
     }
+
 }

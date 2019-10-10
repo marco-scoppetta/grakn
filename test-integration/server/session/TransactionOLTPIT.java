@@ -39,7 +39,7 @@ import grakn.core.server.exception.TransactionException;
 import grakn.core.server.kb.Schema;
 import grakn.core.server.kb.concept.EntityTypeImpl;
 import grakn.core.server.kb.structure.Shard;
-import grakn.core.server.keyspace.KeyspaceImpl;
+import grakn.core.server.keyspace.Keyspace;
 import grakn.core.server.util.LockManager;
 import graql.lang.Graql;
 import graql.lang.query.GraqlDefine;
@@ -52,7 +52,6 @@ import org.janusgraph.core.JanusGraph;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -91,7 +90,7 @@ public class TransactionOLTPIT {
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
     private TransactionOLTP tx;
-    private SessionImpl session;
+    private Session session;
 
     @Before
     public void setUp() {
@@ -219,17 +218,17 @@ public class TransactionOLTPIT {
     @Test
     public void whenClosingATxWhichWasJustCommitted_DoNothing() {
         tx.commit();
-        assertTrue("Graph is still open after commit", tx.isClosed());
+        assertTrue("Graph is still open after commit", !tx.isOpen());
         tx.close();
-        assertTrue("Graph is somehow open after close", tx.isClosed());
+        assertTrue("Graph is somehow open after close", !tx.isOpen());
     }
 
     @Test
     public void whenCommittingATxWhichWasJustCommitted_DoNothing() {
         tx.commit();
-        assertTrue("Graph is still open after commit", tx.isClosed());
+        assertTrue("Graph is still open after commit", !tx.isOpen());
         tx.commit();
-        assertTrue("Graph is somehow open after 2nd commit", tx.isClosed());
+        assertTrue("Graph is somehow open after 2nd commit", !tx.isOpen());
     }
 
     @Test
@@ -283,7 +282,7 @@ public class TransactionOLTPIT {
         failAtOpeningTx(session, false, keyspace);
     }
 
-    private void failAtOpeningTx(SessionImpl session, boolean write, String keyspace) {
+    private void failAtOpeningTx(Session session, boolean write, String keyspace) {
         Exception exception = null;
         try {
             //noinspection ResultOfMethodCallIgnored
@@ -331,9 +330,12 @@ public class TransactionOLTPIT {
         assertThat(entityType.shards().collect(toSet()), containsInAnyOrder(s1, s2, s3));
 
         //Check shards have correct instances
-        assertThat(s1.links().collect(toSet()), containsInAnyOrder(s1_e1, s1_e2, s1_e3));
-        assertThat(s2.links().collect(toSet()), containsInAnyOrder(s2_e1, s2_e2, s2_e3, s2_e4, s2_e5));
-        assertThat(s3.links().collect(toSet()), containsInAnyOrder(s3_e1, s3_e2));
+        assertThat(s1.links().map(vertexElement -> tx.getConcept(Schema.conceptId(vertexElement.element()))).collect(toSet()),
+                containsInAnyOrder(s1_e1, s1_e2, s1_e3));
+        assertThat(s2.links().map(vertexElement -> tx.getConcept(Schema.conceptId(vertexElement.element()))).collect(toSet()),
+                containsInAnyOrder(s2_e1, s2_e2, s2_e3, s2_e4, s2_e5));
+        assertThat(s3.links().map(vertexElement -> tx.getConcept(Schema.conceptId(vertexElement.element()))).collect(toSet()),
+                containsInAnyOrder(s3_e1, s3_e2));
     }
 
     @Test
@@ -345,8 +347,8 @@ public class TransactionOLTPIT {
         config.setConfigProperty(ConfigKey.TYPE_SHARD_THRESHOLD, 1L);
         JanusGraphFactory janusGraphFactory = new JanusGraphFactory(config);
         SessionFactory sessionFactory = new SessionFactory(new LockManager(), janusGraphFactory, new HadoopGraphFactory(config), config);
-        KeyspaceImpl keyspace = server.randomKeyspaceName();
-        try (SessionImpl session = sessionFactory.session(keyspace)) {
+        Keyspace keyspace = server.randomKeyspaceName();
+        try (Session session = sessionFactory.session(keyspace)) {
             keyspace = session.keyspace();
             try (TransactionOLTP tx = session.transaction().write()) {
                 tx.execute(define(type("person").sub("entity")).asDefine());
@@ -359,7 +361,7 @@ public class TransactionOLTPIT {
             assertEquals(1, typeShards.size());
         }
         ConceptId p1;
-        try (SessionImpl session = sessionFactory.session(keyspace)) {
+        try (Session session = sessionFactory.session(keyspace)) {
             try (TransactionOLTP tx = session.transaction().write()) {
                 p1 = tx.execute(insert(var("p1").isa("person")).asInsert()).get(0).get("p1").id();
                 tx.commit();
@@ -373,7 +375,7 @@ public class TransactionOLTPIT {
             assertEquals(2, typeShards.size());
         }
         ConceptId p2;
-        try (SessionImpl session = sessionFactory.session(keyspace)) {
+        try (Session session = sessionFactory.session(keyspace)) {
             try (TransactionOLTP tx = session.transaction().write()) {
                 p2 = tx.execute(insert(var("p2").isa("person")).asInsert()).get(0).get("p2").id();
                 tx.commit();
@@ -396,8 +398,8 @@ public class TransactionOLTPIT {
         config.setConfigProperty(ConfigKey.TYPE_SHARD_THRESHOLD, 1L);
         JanusGraphFactory janusGraphFactory = new JanusGraphFactory(config);
         SessionFactory sessionFactory = new SessionFactory(new LockManager(), janusGraphFactory, new HadoopGraphFactory(config), config);
-        KeyspaceImpl keyspace = server.randomKeyspaceName();
-        try (SessionImpl session = sessionFactory.session(keyspace)) {
+        Keyspace keyspace = server.randomKeyspaceName();
+        try (Session session = sessionFactory.session(keyspace)) {
             keyspace = session.keyspace();
             try (TransactionOLTP tx = session.transaction().write()) {
                 tx.execute(define(type("person").sub("entity")).asDefine());
@@ -405,19 +407,19 @@ public class TransactionOLTPIT {
                 tx.commit();
             }
         }
-        try (SessionImpl session = sessionFactory.session(keyspace)) {
+        try (Session session = sessionFactory.session(keyspace)) {
             try (TransactionOLTP tx = session.transaction().write()) {
                 tx.execute(insert(var("p").isa("person")).asInsert());
                 tx.commit();
             }
         }
-        try (SessionImpl session = sessionFactory.session(keyspace)) {
+        try (Session session = sessionFactory.session(keyspace)) {
             try (TransactionOLTP tx = session.transaction().write()) {
                 tx.execute(insert(var("p").isa("person")).asInsert());
                 tx.commit();
             }
         }
-        try (SessionImpl session = sessionFactory.session(keyspace)) {
+        try (Session session = sessionFactory.session(keyspace)) {
             try (TransactionOLTP tx = session.transaction().write()) {
                 tx.execute(insert(var("c").isa("company")).asInsert());
                 tx.commit();
@@ -433,7 +435,7 @@ public class TransactionOLTPIT {
 
     @Test
     public void whenCreatingAValidSchemaInSeparateThreads_EnsureValidationRulesHold() throws ExecutionException, InterruptedException {
-        SessionImpl localSession = server.sessionWithNewKeyspace();
+        Session localSession = server.sessionWithNewKeyspace();
 
         ExecutorService executor = Executors.newCachedThreadPool();
 

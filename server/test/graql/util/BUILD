@@ -15,44 +15,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-#
 
 load("@graknlabs_build_tools//checkstyle:rules.bzl", "checkstyle_test")
-load("@graknlabs_build_tools//distribution/maven:rules.bzl", "assemble_maven", "deploy_maven")
 
-java_library(
-    name = "api",
-    srcs = glob(["**/*.java"]),
+java_test(
+    name = "lazy-merging-stream-test",
+    srcs = ["LazyMergingStreamTest.java"],
     deps = [
-        "//concept:concept",
-
-        # External dependencies from @graknlabs
-        "@graknlabs_graql//java:graql",
-
-        # External dependencies from Maven
-        "//dependencies/maven/artifacts/com/google/code/findbugs:jsr305",
+        "//server:server",
+        "//dependencies/maven/artifacts/org/mockito:mockito-core"
     ],
-    tags = ["maven_coordinates=io.grakn.core:grakn-api:{pom_version}"],
-    visibility = ["//visibility:public"]
-)
-
-
-assemble_maven(
-    name = "assemble-maven",
-    target = ":api",
-    package = "api",
-    version_file = "//:VERSION",
-    workspace_refs = "@graknlabs_grakn_core_workspace_refs//:refs.json"
-)
-
-deploy_maven(
-    name = "deploy-maven",
-    target = ":assemble-maven"
+    test_class = "grakn.core.graql.util.LazyMergingStreamTest",
+    size = "small"
 )
 
 checkstyle_test(
     name = "checkstyle",
     targets = [
-        ":api"
+        ":lazy-merging-stream-test"
     ],
 )
+
