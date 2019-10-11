@@ -275,17 +275,11 @@ dependencies:
       - "org.mortbay.jetty:servlet-api-2.5"
       - "org.slf4j:slf4j-api"
       - "org.slf4j:slf4j-log4j12"
-      - "com.codahale.metrics:metrics-core" # CONFLICTING WITH DROPWIZARD METRICS
-      - "com.codahale.metrics:metrics-ganglia" # CONFLICTING WITH DROPWIZARD METRICS
-      - "com.codahale.metrics:metrics-graphite" # CONFLICTING WITH DROPWIZARD METRICS
     janusgraph-core:
       version: "0.0.4-grakn-janus"
       lang: java
       exclude:
       - "ch.qos.logback:logback-classic"
-      - "com.codahale.metrics:metrics-core" # CONFLICTING WITH DROPWIZARD METRICS
-      - "com.codahale.metrics:metrics-ganglia" # CONFLICTING WITH DROPWIZARD METRICS
-      - "com.codahale.metrics:metrics-graphite" # CONFLICTING WITH DROPWIZARD METRICS
       - "com.boundary:high-scale-lib"
       - "javax.servlet:javax.servlet-api"
       - "org.apache.servicemix.bundles:org.apache.servicemix.bundles.commons-csv"
@@ -297,7 +291,6 @@ dependencies:
       version: "0.0.4-grakn-janus"
       lang: java
       exclude:
-      - "com.codahale.metrics:metrics-core"
       - "com.fasterxml.jackson.module:jackson-module-scala_2.10"
       - "log4j:log4j"
       - "org.openrdf.sesame:sesame-rio-n3"
