@@ -64,7 +64,7 @@ public class EdgeIT {
 
     @Before
     public void setUp(){
-        Keyspace keyspace = Keyspace.of("keyspace");
+        Keyspace keyspace = Keyspace.of("banana");
         final int TIMEOUT_MINUTES_ATTRIBUTES_CACHE = 2;
         final int ATTRIBUTES_CACHE_MAX_SIZE = 10000;
 
