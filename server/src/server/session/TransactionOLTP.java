@@ -802,7 +802,6 @@ public class TransactionOLTP implements AutoCloseable {
     }
 
 
-
     /**
      * Get the root of all Types.
      *
@@ -986,8 +985,10 @@ public class TransactionOLTP implements AutoCloseable {
             return;
         }
         try {
-            janusTransaction.rollback();
-            janusTransaction.close();
+            if (janusTransaction.isOpen()) { //TODO probably investigate here
+                janusTransaction.rollback();
+                janusTransaction.close();
+            }
         } finally {
             closeTransaction(closeMessage);
         }
