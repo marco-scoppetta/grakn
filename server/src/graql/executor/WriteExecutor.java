@@ -39,6 +39,7 @@ import grakn.core.graql.util.Partition;
 import grakn.core.server.kb.Schema;
 import grakn.core.server.kb.concept.ConceptUtils;
 import grakn.core.server.kb.concept.ConceptVertex;
+import grakn.core.server.kb.structure.VertexElement;
 import grakn.core.server.session.TransactionOLTP;
 import graql.lang.property.VarProperty;
 import graql.lang.statement.Statement;
@@ -295,7 +296,9 @@ public class WriteExecutor {
                 .filter(Thing::isInferred)
                 .forEach(t -> {
                     //as we are going to persist the concepts, reset the inferred flag
-                    ConceptVertex.from(t).vertex().property(Schema.VertexProperty.IS_INFERRED, false);
+                    VertexElement vertex = ConceptVertex.from(t).vertex();
+                    vertex.removeProperty(Schema.VertexProperty.IS_INFERRED);
+                    vertex.property(Schema.VertexProperty.IS_INFERRED, false);
                     transaction.cache().inferredInstanceToPersist(t);
                 });
     }
