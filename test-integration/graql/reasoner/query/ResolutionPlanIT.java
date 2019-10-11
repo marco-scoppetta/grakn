@@ -326,8 +326,8 @@ public class ResolutionPlanIT {
     @Repeat( times = repeat )
     public void whenRelationLinkWithSubbedEndsAndRuleRelationAtEnd_exploitDBRelationsAndConnectivity(){
         String queryString = "{" +
-                "$start id Vsomesampleid;" +
-                "$end id Vanothersampleid;" +
+                "$start id V123;" +
+                "$end id V456;" +
                 "(someRole: $link, otherRole: $start) isa someRelation;" +
                 "(someRole: $anotherlink, otherRole: $link) isa anotherRelation;" +
                 "(someRole: $end, otherRole: $anotherlink) isa derivedRelation;" +
