@@ -134,7 +134,7 @@ public class ResolutionPlanIT {
                 "(someRole:$x, otherRole: $y) isa someRelation;" +
                 "(someRole:$y, otherRole: $z) isa anotherRelation;" +
                 "(someRole:$z, otherRole: $w) isa yetAnotherRelation;" +
-                "$w id Vsampleid;" +
+                "$w id V1234;" +
                 "};";
         ReasonerQueryImpl query = ReasonerQueries.create(conjunction(queryString), tx);
         ImmutableList<Atom> correctPlan = ImmutableList.of(
@@ -152,7 +152,7 @@ public class ResolutionPlanIT {
         String queryString = "{" +
                 "(someRole:$x, otherRole: $y) isa someRelation;" +
                 "(someRole:$y, otherRole: $z) isa derivedRelation;" +
-                "$z id Vsampleid;" +
+                "$z id V1234;" +
                 "};";
         ReasonerQueryImpl query = ReasonerQueries.create(conjunction(queryString), tx);
         ImmutableList<Atom> correctPlan = ImmutableList.of(
@@ -170,8 +170,8 @@ public class ResolutionPlanIT {
                 "(someRole:$x, otherRole: $y) isa someRelation;" +
                 "(someRole:$y, otherRole: $z) isa anotherRelation;" +
                 "(someRole:$z, otherRole: $w) isa yetAnotherRelation;" +
-                "$z id Vsampleid;" +
-                "$w id Vsampleid2;" +
+                "$z id V1234;" +
+                "$w id V12342;" +
                 "};";
         ReasonerQueryImpl query = ReasonerQueries.create(conjunction(queryString), tx);
         ImmutableList<Atom> correctPlan = ImmutableList.of(
