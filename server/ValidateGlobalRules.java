@@ -244,7 +244,6 @@ public class ValidateGlobalRules {
         TypeImpl<?, ?> type = (TypeImpl) thing.type();
 
         while (type != null) {
-
             Map<Role, Boolean> rolesAreRequired = type.directPlays();
             for (Map.Entry<Role, Boolean> roleIsRequired : rolesAreRequired.entrySet()) {
                 if (roleIsRequired.getValue()) {
@@ -257,9 +256,9 @@ public class ValidateGlobalRules {
                     }
 
                     Relation keyRelation = thing.relations(role).findFirst().get();
-                    final TypeImpl<?, ?> ownerType = type;
-                    final Role keyValueRole = tx.getRole(Schema.ImplicitType.KEY_VALUE.getLabel(attributeType).getValue());
-                    final Attribute<?> keyValue = keyRelation.rolePlayers(keyValueRole).findFirst().get().asAttribute();
+                    TypeImpl<?, ?> ownerType = type;
+                    Role keyValueRole = tx.getRole(Schema.ImplicitType.KEY_VALUE.getLabel(attributeType).getValue());
+                    Attribute<?> keyValue = keyRelation.rolePlayers(keyValueRole).findFirst().get().asAttribute();
                     if (keyValue.owners().filter(owner -> owner.type().sups().anyMatch(t -> t.equals(ownerType))).limit(2).count() > 1) {
                         Label resourceTypeLabel = Schema.ImplicitType.explicitLabel(role.label());
                         return Optional.of(VALIDATION_MORE_THAN_ONE_USE_OF_KEY.getMessage(type.label(), keyValue.value(), resourceTypeLabel));

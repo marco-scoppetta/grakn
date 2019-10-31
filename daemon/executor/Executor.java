@@ -176,6 +176,7 @@ public class Executor {
         }
     }
 
+
     private List<String> getGraknPIDArgsCommand(String pid) {
         if (isWindows()) {
             return Arrays.asList("cmd", "/c", "wmic process where processId='" + pid.trim() + "' get Commandline | findstr Grakn");

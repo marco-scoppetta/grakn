@@ -286,7 +286,7 @@ public class AttributeUniquenessIT {
     }
 
     @Test
-    public void whenDeletingAndReaddingSameAttributeInDifferentTx_attributesCacheIsInSyncAndShouldNotTryToMerge() {
+    public void whenDeletingAndReadingSameAttributeInDifferentTx_attributesCacheIsInSyncAndShouldNotTryToMerge() {
         String testAttributeLabel = "test-attribute";
         String testAttributeValue = "test-attribute-value";
         String index = Schema.generateAttributeIndex(Label.of(testAttributeLabel), testAttributeValue);
@@ -322,7 +322,7 @@ public class AttributeUniquenessIT {
     }
 
     @Test
-    public void whenDeletingAndReaddingSameAttributeInSameTx_shouldNotTryToMergeAndThereShouldBeOneAttributeNodeWithDifferentId() {
+    public void whenDeletingAndReadingSameAttributeInSameTx_shouldNotTryToMergeAndThereShouldBeOneAttributeNodeWithDifferentId() {
         String testAttributeLabel = "test-attribute";
         String testAttributeValue = "test-attribute-value";
         String index = Schema.generateAttributeIndex(Label.of(testAttributeLabel), testAttributeValue);
@@ -375,6 +375,23 @@ public class AttributeUniquenessIT {
             List<ConceptMap> attribute = tx.execute(Graql.parse("match $x isa test-attribute; get;").asGet());
             assertEquals(0, attribute.size());
         }
+    }
+
+    @Test
+    public void concurrentInsertionOfSameKey_onlyOneIsAccepted(){
+        Transaction tx = session.writeTransaction();
+        tx.execute(Graql.parse("define \n" +
+                "name sub attribute, \n" +
+                "    datatype string;\n" +
+                "person sub entity, \n" +
+                "    key name;").asDefine());
+        tx.commit();
+
+        //Try to insert 2 persons with same name, even though name is a key, so only one should be allowed to commit.
+        insertConcurrently(Graql.parse("insert $x isa person, has name \"Marco\";").asInsert(), 2);
+        tx = session.readTransaction();
+        List<ConceptMap> execute = tx.execute(Graql.parse("match $x isa person, has name \"Marco\"; get;").asGet());
+        assertEquals(1, execute.size());
     }
 
     private void insertConcurrently(GraqlInsert query, int repetitions) {
