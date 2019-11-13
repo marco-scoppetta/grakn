@@ -14,7 +14,6 @@ java_library(
         "//dependencies/maven/artifacts/io/netty:netty-handler",
         "//dependencies/maven/artifacts/org/hdrhistogram:HdrHistogram",
         "//dependencies/maven/artifacts/org/slf4j:slf4j-api",
-        ":java-driver-shaded-guava",
         ":native-protocol"
     ],
     visibility = [
@@ -32,23 +31,10 @@ java_library(
     runtime_deps = [
         "//dependencies/maven/artifacts/com/github/spotbugs:spotbugs-annotations",
         "//dependencies/maven/artifacts/com/github/stephenc/jcip:jcip-annotations",
-        ":java-driver-core",
-        ":java-driver-shaded-guava"
+        ":java-driver-core"
     ],
     visibility = [
         "//visibility:public"
-    ]
-)
-
-
-
-java_library(
-    name = "java-driver-shaded-guava",
-    exports = [
-        "//external:jar/com/datastax/oss/java-driver-shaded-guava"
-    ],
-    visibility = [
-        "//dependencies/maven/artifacts:__subpackages__"
     ]
 )
 

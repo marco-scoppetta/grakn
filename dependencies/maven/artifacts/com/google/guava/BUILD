@@ -7,6 +7,7 @@ java_library(
         "//dependencies/maven/artifacts/com/google/code/findbugs:jsr305",
         "//dependencies/maven/artifacts/com/google/errorprone:error-prone-annotations",
         "//dependencies/maven/artifacts/com/google/j2objc:j2objc-annotations",
+        "//dependencies/maven/artifacts/org/checkerframework:checker-qual",
         "//dependencies/maven/artifacts/org/codehaus/mojo:animal-sniffer-annotations"
     ],
     visibility = [

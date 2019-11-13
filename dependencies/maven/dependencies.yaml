@@ -71,7 +71,7 @@ dependencies:
 
   com.google.guava:
     guava:
-      version: "23.0"
+      version: "25.1-jre"
       lang: java
 
   commons-cli:
@@ -297,11 +297,13 @@ dependencies:
       lang: java
       exclude:
         - "com.github.jnr:jnr-ffi"
+        - "com.datastax.oss:java-driver-shaded-guava"
     java-driver-query-builder:
       version: "4.3.0"
       lang: java
       exclude:
         - "com.github.jnr:jnr-ffi"
+        - "com.datastax.oss:java-driver-shaded-guava"
   io.vavr:
     vavr:
       version: "0.9.0"
