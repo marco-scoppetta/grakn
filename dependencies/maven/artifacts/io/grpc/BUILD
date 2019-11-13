@@ -39,7 +39,6 @@ java_library(
     ],
     runtime_deps = [
         "//dependencies/maven/artifacts/io/netty:netty-codec-http2",
-        "//dependencies/maven/artifacts/io/netty:netty-handler-proxy",
         ":grpc-core"
     ],
     visibility = [

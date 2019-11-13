@@ -106,6 +106,8 @@ dependencies:
     grpc-netty:
       version: "1.16.0"
       lang: java
+      exclude:
+        - "io.netty:netty-handler-proxy"
     grpc-protobuf:
       version: "1.16.0"
       lang: java

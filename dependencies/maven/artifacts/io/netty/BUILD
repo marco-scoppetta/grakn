@@ -74,21 +74,6 @@ java_library(
 
 
 java_library(
-    name = "netty-codec-socks",
-    exports = [
-        "//external:jar/io/netty/netty-codec-socks"
-    ],
-    runtime_deps = [
-        ":netty-codec"
-    ],
-    visibility = [
-        "//dependencies/maven/artifacts:__subpackages__"
-    ]
-)
-
-
-
-java_library(
     name = "netty-common",
     exports = [
         "//external:jar/io/netty/netty-common"
@@ -109,23 +94,6 @@ java_library(
         ":netty-buffer",
         ":netty-codec",
         ":netty-common",
-        ":netty-transport"
-    ],
-    visibility = [
-        "//dependencies/maven/artifacts:__subpackages__"
-    ]
-)
-
-
-
-java_library(
-    name = "netty-handler-proxy",
-    exports = [
-        "//external:jar/io/netty/netty-handler-proxy"
-    ],
-    runtime_deps = [
-        ":netty-codec-http",
-        ":netty-codec-socks",
         ":netty-transport"
     ],
     visibility = [
