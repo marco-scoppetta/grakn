@@ -22,12 +22,17 @@ java_test(
     size = "large",
     srcs = ["BenchmarkBigIT.java"],
     classpath_resources = ["//test-integration/resources:logback-test"],
+    resources = [
+            "//test-integration/graql/reasoner/stubs:reasoning-stubs",
+        ],
     data = [
         "//test-integration/graql/reasoner/resources:linear-transivity",
         "//test-integration/graql/reasoner/resources:multi-join",
     ],
     test_class = "grakn.core.graql.reasoner.benchmark.BenchmarkBigIT",
     deps = [
+        "//kb",
+        "//test-integration/util:graql-test-util",
         "//dependencies/maven/artifacts/com/google/guava",
         "//dependencies/maven/artifacts/org/hamcrest:hamcrest-library",
         "//dependencies/maven/artifacts/org/slf4j:slf4j-api",

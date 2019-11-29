@@ -29,6 +29,7 @@ import grakn.core.kb.concept.api.ConceptId;
 import grakn.core.kb.server.Session;
 import grakn.core.kb.server.Transaction;
 import grakn.core.rule.GraknTestServer;
+import grakn.core.util.GraqlTestUtil;
 import graql.lang.Graql;
 import graql.lang.pattern.Pattern;
 import graql.lang.property.IdProperty;
@@ -41,6 +42,9 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,6 +54,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static grakn.core.util.GraqlTestUtil.loadFromFile;
 import static grakn.core.util.GraqlTestUtil.loadFromFileAndCommit;
 import static graql.lang.Graql.var;
 import static junit.framework.TestCase.assertTrue;

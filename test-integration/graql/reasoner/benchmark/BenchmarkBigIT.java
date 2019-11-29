@@ -24,11 +24,15 @@ import com.google.common.collect.Multimap;
 import grakn.client.GraknClient;
 import grakn.client.answer.ConceptMap;
 import grakn.client.concept.AttributeType;
+import grakn.client.concept.Concept;
 import grakn.client.concept.ConceptId;
 import grakn.client.concept.Label;
 import grakn.client.concept.RelationType;
 import grakn.client.concept.Role;
+import grakn.core.kb.server.Session;
+import grakn.core.kb.server.Transaction;
 import grakn.core.rule.GraknTestServer;
+import grakn.core.util.GraqlTestUtil;
 import graql.lang.Graql;
 import graql.lang.pattern.Pattern;
 import graql.lang.query.GraqlInsert;
@@ -54,6 +58,7 @@ import java.util.stream.Collectors;
 
 import static graql.lang.Graql.var;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings({"CheckReturnValue", "Duplicates"})
 public class BenchmarkBigIT {
@@ -155,7 +160,7 @@ public class BenchmarkBigIT {
         Label baseRelationLabel = Label.of("relation1");
         Label genericRelationLabel = Label.of("relation");
         Label fromRoleLabel = Label.of("fromRole");
-        Label toRoleLabel =Label.of("toRole");
+        Label toRoleLabel = Label.of("toRole");
 
         //load ontology
         try (GraknClient.Session session = new GraknClient(server.grpcUri()).session(keyspace)) {
@@ -260,7 +265,8 @@ public class BenchmarkBigIT {
     public void testRandomSetLinearTransitivity() {
         final int N = 1000;
         final int limit = 100;
-        System.out.println(new Object() {}.getClass().getEnclosingMethod().getName());
+        System.out.println(new Object() {
+        }.getClass().getEnclosingMethod().getName());
         loadTransitivityData(N);
 
         try (GraknClient.Session session = new GraknClient(server.grpcUri()).session(keyspace)) {
@@ -330,6 +336,69 @@ public class BenchmarkBigIT {
         }
     }
 
+    @Test
+    public void runMeAFewTimes_AndSeeMeStalling() {
+        String resourcePath = "test-integration/graql/reasoner/stubs/";
+
+        Session session = server.sessionWithNewKeyspace();
+        Transaction transaction = session.writeTransaction();
+        GraqlTestUtil.loadFromFile(resourcePath, "lastTestSchema.gql", transaction);
+        transaction.commit();
+        transaction = session.writeTransaction();
+        GraqlTestUtil.loadFromFile(resourcePath, "lastTest.gql", transaction);
+        transaction.commit();
+        session.close();
+
+
+        GraknClient graknClient = new GraknClient(server.grpcUri());
+        GraknClient.Session remoteSessh = graknClient.session(session.keyspace().name());
+        GraknClient.Transaction readTx = remoteSessh.transaction().read();
+        List<ConceptMap> answers = readTx.execute(Graql.parse("match $bnk isa bank; $rsk isa risk-score, has risk-level \"high\"; $r (risk-value: $rsk, risk-subject: $bnk); get;").asGet());
+        ConceptMap target = answers.get(2);
+        ConceptMap targetExplAnswer = target.explanation().getAnswers().get(0);
+        Concept inferredRelation = targetExplAnswer.map().get(new Variable("r"));
+        System.out.println("About to test inferdness");
+        assertTrue(inferredRelation.asThing().isInferred());
+        System.out.println("We tried our best, and we managed to determine the inferdness");
+        readTx.close();
+        remoteSessh.close();
+        graknClient.close();
+    }
+
+    @Test
+    public void IAmConfused_About_Explanations() {
+        String resourcePath = "test-integration/graql/reasoner/stubs/";
+
+        Session session = server.sessionWithNewKeyspace();
+        Transaction transaction = session.writeTransaction();
+        GraqlTestUtil.loadFromFile(resourcePath, "lastTestSchema.gql", transaction);
+        transaction.commit();
+        transaction = session.writeTransaction();
+        GraqlTestUtil.loadFromFile(resourcePath, "lastTest.gql", transaction);
+        transaction.commit();
+        session.close();
+
+
+        GraknClient graknClient = new GraknClient(server.grpcUri());
+        GraknClient.Session remoteSessh = graknClient.session(session.keyspace().name());
+        GraknClient.Transaction readTx = remoteSessh.transaction().read();
+        List<ConceptMap> answers = readTx.execute(Graql.parse("match $bnk isa bank; $rsk isa risk-score, has risk-level \"high\"; $r (risk-value: $rsk, risk-subject: $bnk); get;").asGet());
+        ConceptMap target = answers.get(2);
+        ConceptMap targetExplAnswer = target.explanation().getAnswers().get(0);
+        System.out.println("banana");
+        Concept inferredRelation = targetExplAnswer.map().get(new Variable("r"));
+        System.out.println("banana2");
+        if (inferredRelation == null) {
+            throw new RuntimeException("TRUST NO ONE");
+        }
+        boolean b = targetExplAnswer.hasExplanation();
+        System.out.println("This should be true -> "+b);
+        // NB: for some reason assertTrue(targetExplAnswer.hasExplanation()) STALLS the whole test
+        readTx.close();
+        remoteSessh.close();
+        graknClient.close();
+    }
+
     /**
      * Scalability test defined in terms of number of rules in the system. Creates a simple rule chain based on join operation on two relations:
      * <p>
@@ -343,7 +412,8 @@ public class BenchmarkBigIT {
     @Test
     public void testJoinRuleChain() {
         final int N = 200;
-        System.out.println(new Object() {}.getClass().getEnclosingMethod().getName());
+        System.out.println(new Object() {
+        }.getClass().getEnclosingMethod().getName());
         loadRuleChainData(N);
 
         try (GraknClient.Session session = new GraknClient(server.grpcUri()).session(keyspace)) {
